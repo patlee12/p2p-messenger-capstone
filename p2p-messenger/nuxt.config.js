@@ -21,6 +21,13 @@ export default {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
+  rules: [
+    {
+      test: /\.mjs$/,
+      include: /node_modules/,
+      type: "javascript/auto"
+    }
+  ], 
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
@@ -39,6 +46,7 @@ export default {
     '@nuxt/typescript-build',
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
+    '@nuxtjs/composition-api/module',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
