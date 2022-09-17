@@ -10,7 +10,5 @@ export default defineComponent({
 </script>
 
 <template>
-  
-    <messenger />
-
+  <messenger />
 </template>

@@ -1,4 +1,3 @@
-
 <script>
 import { defineComponent } from "@nuxtjs/composition-api";
 
@@ -17,9 +16,26 @@ export default defineComponent({
 
 <template>
   <div style="text-align: center">
-
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="640px" height="360px" viewBox="0 0 640 360" enable-background="new 0 0 640 360" xml:space="preserve">  <image id="image0" width="640" height="360" x="0" y="0"
-    href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAFoCAMAAADw7LpjAAAABGdBTUEAALGPC/xhBQAAACBjSFJN
+    <svg
+      version="1.1"
+      id="Layer_1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      x="0px"
+      y="0px"
+      width="640px"
+      height="360px"
+      viewBox="0 0 640 360"
+      enable-background="new 0 0 640 360"
+      xml:space="preserve"
+    >
+      <image
+        id="image0"
+        width="640"
+        height="360"
+        x="0"
+        y="0"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAAFoCAMAAADw7LpjAAAABGdBTUEAALGPC/xhBQAAACBjSFJN
 AAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAA81BMVEX6+vr5+fn29vb19fX3
 9/f4+Pj06+Ty4dPw2MHx0bP11LbzyaT13MX35tf58OnzyqXuqWzpiTPjdxfidxfneRfsmlDwuYj1
 2cH36d3leBfnl07ppmrw1b3z5drkeBfy1r/46t7meRfkhjLx1r747+f45tb128Py8fKGgYajn6PA
@@ -148,12 +164,12 @@ Whcwp8UcWBkPuoA5LeagynjRBcxpMQdUxpMuYE6LOZgy3nQBc1rMgZTxqAuY02IOksWrLmBOijlE
 Fs+6gDku5v8HwhJwyMgSqjMAAAAtdEVYdENyZWF0aW9uIFRpbWUAVHVlIDEzIFNlcCAyMDIyIDEx
 OjM4OjIwIFBNIEVEVBAdysQAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMDktMTRUMDY6MDY6NDUr
 MDI6MDB+mPMnAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTA5LTE0VDA2OjA2OjQ1KzAyOjAwD8VL
-mwAAABl0RVh0U29mdHdhcmUAZ25vbWUtc2NyZWVuc2hvdO8Dvz4AAAAASUVORK5CYII=" />
-</svg>
+mwAAABl0RVh0U29mdHdhcmUAZ25vbWUtc2NyZWVuc2hvdO8Dvz4AAAAASUVORK5CYII="
+      />
+    </svg>
     <h4 class="subTitle">
-      An application focused on delivering private communication between peers without a centralized server in the middle.
+      An application focused on delivering private communication between peers
+      without a centralized server in the middle.
     </h4>
   </div>
 </template>
-
-
