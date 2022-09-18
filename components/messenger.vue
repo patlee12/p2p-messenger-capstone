@@ -9,15 +9,13 @@ export default defineComponent({
     const userId = ref();
     const peerId = ref();
     const userName = ref();
-    const host = ref(process.env.HOST);
-    const port = ref(process.env.PORT);
+    const host = ref();
+    const port = ref();
     const windowHeight = window.innerHeight * 0.7;
     const rules = [
       (value) => !!value || "Required.",
       (value) => (value && value.length >= 3) || "Min 3 characters",
     ];
-    console.log(host.value);
-    console.log(port.value);
 
     const peerCall = new Peer({
       host: process.env.HOST,
@@ -32,12 +30,12 @@ export default defineComponent({
     console.log(peerCall);
 
     let currentCall = undefined;
-    function endCall() {
+    async function endCall() {
       document.querySelector("#menu").style.display = "block";
       document.querySelector("#live").style.display = "none";
       if (!currentCall) return;
       try {
-        currentCall.close();
+        await currentCall.close();
       } catch {}
       currentCall = undefined;
     }
@@ -48,6 +46,10 @@ export default defineComponent({
         secure: false,
         port: port.value,
         path: "/myapp",
+      });
+
+      peer.on("open", function (id) {
+        console.log(peer);
       });
 
       const stream = await navigator.mediaDevices.getUserMedia({
