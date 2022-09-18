@@ -47,10 +47,7 @@ export default defineComponent({
         port: port.value,
         path: "/myapp",
       });
-
-      peer.on("open", function (id) {
-        console.log(peer);
-      });
+      console.log(peer);
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
