@@ -32,7 +32,7 @@ export default defineComponent({
     let currentCall = undefined;
     async function endCall() {
       document.querySelector("#menu").style.display = "block";
-      document.querySelector("#live").style.display = "none";
+      document.querySelector("#liveFeed").style.display = "none";
       if (!currentCall) return;
       try {
         await currentCall.close();
@@ -57,17 +57,17 @@ export default defineComponent({
         audio: true,
       });
       document.getElementById("menu").style.display = "none";
-      document.getElementById("live").style.display = "block";
-      document.getElementById("local-video").srcObject = stream;
-      document.getElementById("local-video").play();
+      document.getElementById("liveFeed").style.display = "block";
+      document.getElementById("localStream").srcObject = stream;
+      document.getElementById("localStream").play();
 
       const call = peer.call(peerId.value, stream);
       call.on("stream", (stream) => {
-        document.getElementById("remote-video").srcObject = stream;
-        document.getElementById("remote-video").play();
+        document.getElementById("remoteStream").srcObject = stream;
+        document.getElementById("remoteStream").play();
       });
       call.on("data", (stream) => {
-        document.querySelector("#remote-video").srcObject = stream;
+        document.querySelector("#remoteStream").srcObject = stream;
       });
       call.on("error", (err) => {
         console.log(err);
@@ -80,31 +80,24 @@ export default defineComponent({
 
     peerCall.on("call", (call) => {
       if (confirm(`Accept call from ${call.peer}?`)) {
-        // grab the camera and mic
         navigator.mediaDevices
           .getUserMedia({ video: true, audio: true })
           .then((stream) => {
-            // play the local preview
-            document.querySelector("#local-video").srcObject = stream;
-            document.querySelector("#local-video").play();
-            // answer the call
+            document.querySelector("#localStream").srcObject = stream;
+            document.querySelector("#localStream").play();
             call.answer(stream);
-            // save the close function
             currentCall = call;
-            // change to the video view
             document.querySelector("#menu").style.display = "none";
-            document.querySelector("#live").style.display = "block";
+            document.querySelector("#liveFeed").style.display = "block";
             call.on("stream", (remoteStream) => {
-              // when we receive the remote stream, play it
-              document.getElementById("remote-video").srcObject = remoteStream;
-              document.getElementById("remote-video").play();
+              document.getElementById("remoteStream").srcObject = remoteStream;
+              document.getElementById("remoteStream").play();
             });
           })
           .catch((err) => {
             console.log("Failed to get local stream:", err);
           });
       } else {
-        // user rejected the call, close it
         call.close();
       }
     });
@@ -163,7 +156,7 @@ export default defineComponent({
                 :rules="rules"
                 hide-details="auto"
               ></v-text-field>
-              <v-btn id="start-call" @click="callUser()">Connect</v-btn>
+              <v-btn id="startCall" @click="callUser()">Connect</v-btn>
             </div>
           </v-card-actions>
         </v-card>
@@ -171,10 +164,10 @@ export default defineComponent({
       <v-col cols="8">
         <v-card :height="windowHeight">
           <v-card-title> Conversation </v-card-title>
-          <div id="live">
-            <video id="remote-video"></video>
-            <video id="local-video" muted="true"></video>
-            <v-btn id="end-call" @click="endCall()">End Call</v-btn>
+          <div id="liveFeed">
+            <video id="remoteStream"></video>
+            <video id="localStream" muted="true"></video>
+            <v-btn id="endCall" @click="endCall()">End Call</v-btn>
           </div>
         </v-card>
       </v-col>
@@ -185,7 +178,7 @@ export default defineComponent({
 .v-text-field {
   padding: 10px;
 }
-#live {
+#liveFeed {
   position: absolute;
   top: 0;
   left: 0;
@@ -196,17 +189,17 @@ export default defineComponent({
   background-color: #000;
   display: none;
 }
-#local-video {
+#localStream {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 250px;
+  width: 300px;
   -webkit-transform: scaleX(-1);
   transform: scaleX(-1);
-  margin: 16px;
+  margin: 20px;
   border: 2px solid #fff;
 }
-#remote-video {
+#remoteStream {
   position: absolute;
   max-width: 100%;
   height: 100%;
@@ -214,13 +207,13 @@ export default defineComponent({
   left: 50%;
   transform: translate(-50%, -50%);
 }
-#start-call {
+#startCall {
   padding: 5px;
   background-color: green;
   color: white;
   border: none;
 }
-#end-call {
+#endCall {
   position: absolute;
   bottom: 10px;
   right: 10px;
