@@ -30,6 +30,31 @@ export default defineComponent({
     console.log(peerCall);
 
     let currentCall = undefined;
+
+    peerCall.on("call", (call) => {
+      if (confirm(`Accept incoming Call ${call.peer}?`)) {
+        navigator.mediaDevices
+          .getUserMedia({ video: true, audio: true })
+          .then((stream) => {
+            document.querySelector("#localStream").srcObject = stream;
+            document.querySelector("#localStream").play();
+            call.answer(stream);
+            currentCall = call;
+            document.querySelector("#menu").style.display = "none";
+            document.querySelector("#liveFeed").style.display = "block";
+            call.on("stream", (remoteStream) => {
+              document.getElementById("remoteStream").srcObject = remoteStream;
+              document.getElementById("remoteStream").play();
+            });
+          })
+          .catch((err) => {
+            console.log("Failed to get local stream:", err);
+          });
+      } else {
+        call.close();
+      }
+    });
+
     async function endCall() {
       document.querySelector("#menu").style.display = "block";
       document.querySelector("#liveFeed").style.display = "none";
@@ -74,30 +99,6 @@ export default defineComponent({
       });
       currentCall = call;
     }
-
-    peerCall.on("call", (call) => {
-      if (confirm(`Accept call from ${call.peer}?`)) {
-        navigator.mediaDevices
-          .getUserMedia({ video: true, audio: true })
-          .then((stream) => {
-            document.querySelector("#localStream").srcObject = stream;
-            document.querySelector("#localStream").play();
-            call.answer(stream);
-            currentCall = call;
-            document.querySelector("#menu").style.display = "none";
-            document.querySelector("#liveFeed").style.display = "block";
-            call.on("stream", (remoteStream) => {
-              document.getElementById("remoteStream").srcObject = remoteStream;
-              document.getElementById("remoteStream").play();
-            });
-          })
-          .catch((err) => {
-            console.log("Failed to get local stream:", err);
-          });
-      } else {
-        call.close();
-      }
-    });
 
     return {
       windowHeight,
