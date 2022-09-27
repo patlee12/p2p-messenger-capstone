@@ -1,7 +1,13 @@
 import colors from "vuetify/es5/util/colors";
+import fs from "fs";
+import path from "path";
 
 export default {
   server: {
+    https: {
+      key: fs.readFileSync(path.resolve(__dirname, "peerjs.key")),
+      cert: fs.readFileSync(path.resolve(__dirname, "peerjs.crt")),
+    },
     host: process.env.HOST,
   },
   env: {

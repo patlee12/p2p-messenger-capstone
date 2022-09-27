@@ -19,7 +19,7 @@ export default defineComponent({
 
     const peerCall = new Peer({
       host: process.env.HOST,
-      secure: false,
+      secure: true,
       port: Number(process.env.PORT) + 1,
       path: "/myapp",
     });
@@ -68,7 +68,7 @@ export default defineComponent({
     async function callUser() {
       const peer = new Peer({
         host: host.value,
-        secure: false,
+        secure: true,
         port: port.value,
         path: "/myapp",
       });
