@@ -13,6 +13,7 @@ export default {
   env: {
     HOST: process.env.HOST,
     PORT: process.env.PORT,
+    SIGNALSERVERHOST: process.env.SIGNALSERVERHOST,
   },
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,

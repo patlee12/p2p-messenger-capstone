@@ -22,7 +22,7 @@ app.use(cors());
 app.use("/myapp", peerServer);
 server.listen(
   `${Number(process.env.PORT) + 1}`,
-  process.env.HOST,
+  process.env.SIGNALSERVERHOST,
   function (err) {
     console.log(`Peer Server running:`);
     console.log(err, server.address());

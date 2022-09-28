@@ -18,7 +18,7 @@ export default defineComponent({
     ];
 
     const peerCall = new Peer({
-      host: process.env.HOST,
+      host: process.env.SIGNALSERVERHOST,
       secure: true,
       port: Number(process.env.PORT) + 1,
       path: "/myapp",
