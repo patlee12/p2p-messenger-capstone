@@ -11,6 +11,16 @@ export default defineComponent({
     const userName = ref();
     const host = ref();
     const port = ref();
+    const myIp = ref();
+    async function getIp() {
+      const { ip } = await fetch("https://api.ipify.org?format=json", {
+        method: "GET",
+      })
+        .then((res) => res.json())
+        .catch((error) => console.error(error));
+      myIp.value = ip;
+    }
+    getIp();
     const windowHeight = window.innerHeight * 0.7;
     const rules = [
       (value) => !!value || "Required.",
@@ -110,6 +120,7 @@ export default defineComponent({
       port,
       endCall,
       callUser,
+      myIp,
     };
   },
 });
@@ -121,6 +132,7 @@ export default defineComponent({
       <v-col cols="4">
         <v-card>
           <v-card-title> Configuration </v-card-title>
+          <v-text-field v-model="myIp" label="Your Ip"> </v-text-field>
           <v-text-field
             v-model="userId"
             @focus="$event.target.select()"
