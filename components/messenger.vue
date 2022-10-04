@@ -1,17 +1,29 @@
 <script>
-import { defineComponent, ref } from "@nuxtjs/composition-api";
+import { defineComponent, ref, useRoute } from "@nuxtjs/composition-api";
 import { Peer } from "peerjs";
 
 export default defineComponent({
   name: "Messenger",
 
   setup() {
-    const userId = ref();
-    const peerId = ref();
+    const route = useRoute();
+    const yourPeerId = ref();
+    const peerId = ref(
+      route.value.query.peerId ? route.value.query.peerId : ""
+    );
     const userName = ref();
-    const host = ref();
-    const port = ref();
     const myIp = ref();
+    const callUrl = ref();
+    const splitUrl = window.location.href.split(":");
+    const signalServerHost = ref(splitUrl[1].slice(2));
+    const signalServerPort = ref(Number(splitUrl[2].split("/")[0]) + 1);
+    const websiteServerPort = ref(splitUrl[2].split("/")[0]);
+    const signalServerUrl = ref(
+      `https://${signalServerHost.value}:${signalServerPort.value}/myapp`
+    );
+    const host = ref(signalServerHost.value);
+    const port = ref(signalServerPort.value);
+
     async function getIp() {
       const { ip } = await fetch("https://api.ipify.org?format=json", {
         method: "GET",
@@ -21,6 +33,15 @@ export default defineComponent({
       myIp.value = ip;
     }
     getIp();
+    async function createUrlLink() {
+      try {
+        await navigator.clipboard.writeText(callUrl.value);
+        alert("Copied");
+      } catch ($err) {
+        alert("Cannot copy");
+      }
+    }
+
     const windowHeight = window.innerHeight * 0.7;
     const rules = [
       (value) => !!value || "Required.",
@@ -28,15 +49,17 @@ export default defineComponent({
     ];
 
     const peerCall = new Peer({
-      host: process.env.SIGNALSERVERHOST,
+      host: signalServerHost.value,
       secure: true,
-      port: Number(process.env.PORT) + 1,
+      port: signalServerPort.value,
       path: "/myapp",
     });
 
     peerCall.on("open", function (id) {
-      userId.value = id;
+      yourPeerId.value = id;
+      callUrl.value = `https://${signalServerHost.value}:${websiteServerPort.value}/dashboard?peerId=${yourPeerId.value}`;
     });
+
     console.log(peerCall);
 
     let currentCall = undefined;
@@ -113,7 +136,7 @@ export default defineComponent({
     return {
       windowHeight,
       rules,
-      userId,
+      yourPeerId,
       peerId,
       userName,
       host,
@@ -121,6 +144,9 @@ export default defineComponent({
       endCall,
       callUser,
       myIp,
+      createUrlLink,
+      signalServerPort,
+      signalServerUrl,
     };
   },
 });
@@ -132,11 +158,25 @@ export default defineComponent({
       <v-col cols="4">
         <v-card>
           <v-card-title> Configuration </v-card-title>
-          <v-text-field v-model="myIp" label="Your Ip"> </v-text-field>
+          <v-row>
+            <v-col cols="4">
+              <v-text-field v-model="myIp" label="Your Public Ip">
+              </v-text-field>
+            </v-col>
+            <v-col cols="4">
+              <v-btn :href="signalServerUrl" target="_blank"
+                >Turn Server
+              </v-btn>
+            </v-col>
+            <v-col cols="4">
+              <v-btn @click="createUrlLink()">Share Link </v-btn>
+            </v-col>
+          </v-row>
+
           <v-text-field
-            v-model="userId"
+            v-model="yourPeerId"
             @focus="$event.target.select()"
-            label="Your Id"
+            label="Your Peer Id"
             disabled
             hide-details="auto"
           ></v-text-field>
@@ -144,7 +184,7 @@ export default defineComponent({
             <div id="menu">
               <v-text-field
                 v-model="peerId"
-                label="Peer ID"
+                label="Peer's ID"
                 :rules="rules"
                 hide-details="auto"
               ></v-text-field>
