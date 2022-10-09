@@ -158,20 +158,8 @@ export default defineComponent({
       <v-col cols="4">
         <v-card>
           <v-card-title> Configuration </v-card-title>
-          <v-row>
-            <v-col cols="4">
               <v-text-field v-model="myIp" label="Your Public Ip">
               </v-text-field>
-            </v-col>
-            <v-col cols="4">
-              <v-btn :href="signalServerUrl" target="_blank"
-                >Turn Server
-              </v-btn>
-            </v-col>
-            <v-col cols="4">
-              <v-btn @click="createUrlLink()">Share Link </v-btn>
-            </v-col>
-          </v-row>
 
           <v-text-field
             v-model="yourPeerId"
@@ -181,6 +169,18 @@ export default defineComponent({
             hide-details="auto"
           ></v-text-field>
           <v-card-actions>
+            <v-row>
+              <v-col>
+            <v-btn @click="createUrlLink()">Share Link </v-btn>
+          </v-col>
+          <v-col>
+            <v-btn :href="signalServerUrl" target="_blank"
+                >Turn Server
+              </v-btn>
+            </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
             <div id="menu">
               <v-text-field
                 v-model="peerId"
@@ -208,6 +208,8 @@ export default defineComponent({
               ></v-text-field>
               <v-btn id="startCall" @click="callUser()">Connect</v-btn>
             </div>
+          </v-col>
+          </v-row>
           </v-card-actions>
         </v-card>
       </v-col>
