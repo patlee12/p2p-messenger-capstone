@@ -1,5 +1,5 @@
 <script>
-import { defineComponent, ref, useRoute } from "@nuxtjs/composition-api";
+import { defineComponent, ref, useRoute, computed } from "@nuxtjs/composition-api";
 import { Peer } from "peerjs";
 
 export default defineComponent({
@@ -11,6 +11,7 @@ export default defineComponent({
     const peerId = ref(
       route.value.query.peerId ? route.value.query.peerId : ""
     );
+    const peer=ref();
     const userName = ref();
     const myIp = ref();
     const callUrl = ref();
@@ -23,6 +24,16 @@ export default defineComponent({
     );
     const host = ref(signalServerHost.value);
     const port = ref(signalServerPort.value);
+    const state=computed(()=>{
+return {
+  myid:yourPeerId.value,
+  peerId:peerId.value,
+  peer:peer.value,
+  message:'',
+  messages:[],
+
+}
+    });
 
     async function getIp() {
       const { ip } = await fetch("https://api.ipify.org?format=json", {
@@ -76,13 +87,20 @@ export default defineComponent({
             document.querySelector("#menu").style.display = "none";
             document.querySelector("#liveFeed").style.display = "block";
             call.on("stream", (remoteStream) => {
-              document.getElementById("remoteStream").srcObject = remoteStream;
-              document.getElementById("remoteStream").play();
+              document.querySelector("#remoteStream").srcObject = remoteStream;
+              document.querySelector("#remoteStream").play();
             });
           })
           .catch((err) => {
             console.log("Failed to get local stream:", err);
           });
+          call.on("close", async() => {
+            console.log('Called Ended')
+            // document.querySelector("#remoteStream").pause();
+            // document.querySelector("#localStream").pause();
+            await call.close();
+          
+      });
       } else {
         call.close();
       }
@@ -97,15 +115,14 @@ export default defineComponent({
       } catch {}
       currentCall = undefined;
     }
-
     async function callUser() {
-      const peer = new Peer({
+      peer.value = new Peer({
         host: host.value,
         secure: true,
         port: port.value,
         path: "/myapp",
       });
-      console.log(peer);
+      console.log(state.value);
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
@@ -116,19 +133,21 @@ export default defineComponent({
       document.getElementById("localStream").srcObject = stream;
       document.getElementById("localStream").play();
 
-      const call = peer.call(peerId.value, stream);
+      const call = peer.value.call(peerId.value, stream);
       call.on("stream", (stream) => {
         document.getElementById("remoteStream").srcObject = stream;
         document.getElementById("remoteStream").play();
       });
-      call.on("data", (stream) => {
-        document.querySelector("#remoteStream").srcObject = stream;
-      });
+      // call.on("data", (stream) => {
+      //   document.querySelector("#remoteStream").srcObject = stream;
+      // });
       call.on("error", (err) => {
         console.log(err);
       });
       call.on("close", () => {
-        endCall();
+        console.log('Call ended');
+        peer.value.disconnect();
+        console.log(peer.value);
       });
       currentCall = call;
     }
