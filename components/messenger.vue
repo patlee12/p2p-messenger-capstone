@@ -310,6 +310,7 @@ export default defineComponent({
             <v-card-actions>
               <v-text-field
                 v-model="state.message"
+                @keyup.enter="sendMsg()"
                 label="Message"
                 single-line
                 solo-inverted
