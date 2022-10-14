@@ -1,17 +1,27 @@
 <script>
-import { defineComponent, ref, useRoute, computed } from "@nuxtjs/composition-api";
+import {
+  defineComponent,
+  onMounted,
+  ref,
+  useRoute,
+} from "@nuxtjs/composition-api";
 import { Peer } from "peerjs";
 
 export default defineComponent({
   name: "Messenger",
 
   setup() {
+    onMounted(() => {
+      setInterval(function () {
+        scrollBottom();
+      }, 200);
+    });
     const route = useRoute();
     const yourPeerId = ref();
     const peerId = ref(
       route.value.query.peerId ? route.value.query.peerId : ""
     );
-    const peer=ref();
+    const peer = ref();
     const userName = ref();
     const myIp = ref();
     const callUrl = ref();
@@ -24,16 +34,32 @@ export default defineComponent({
     );
     const host = ref(signalServerHost.value);
     const port = ref(signalServerPort.value);
-    const state=computed(()=>{
-return {
-  myid:yourPeerId.value,
-  peerId:peerId.value,
-  peer:peer.value,
-  message:'',
-  messages:[],
-
-}
+    const state = ref({
+      myid: yourPeerId.value,
+      peerId: peerId.value,
+      peer: peer.value,
+      message: "",
+      messages: [],
     });
+
+    function getDateTime() {
+      const current = new Date();
+      const date =
+        current.getFullYear() +
+        "-" +
+        (current.getMonth() + 1) +
+        "-" +
+        current.getDate();
+      const time =
+        current.getHours() +
+        ":" +
+        current.getMinutes() +
+        ":" +
+        current.getSeconds();
+      const dateTime = date + " " + time;
+
+      return dateTime;
+    }
 
     async function getIp() {
       const { ip } = await fetch("https://api.ipify.org?format=json", {
@@ -71,12 +97,34 @@ return {
       callUrl.value = `https://${signalServerHost.value}:${websiteServerPort.value}/dashboard?peerId=${yourPeerId.value}`;
     });
 
-    console.log(peerCall);
+    peerCall.on("connection", (connection) => {
+      connection.on("data", (data) => {
+        state.value.messages.push(data);
+      });
+    });
+
+    async function sendMsg() {
+      const connection = await state.value.peer.connect(state.value.peerId);
+      connection.on("open", () => {
+        const msg = {
+          sender: userName.value,
+          peerId: state.value.myid,
+          message: state.value.message,
+          time: getDateTime(),
+        };
+        connection.send(msg);
+        state.value.messages.push(msg);
+        state.value.message = "";
+      });
+    }
 
     let currentCall = undefined;
 
     peerCall.on("call", (call) => {
       if (confirm(`Accept incoming Call ${call.peer}?`)) {
+        state.value.myid = yourPeerId.value;
+        state.value.peer = peerCall;
+        state.value.peerId = call.metadata.id;
         navigator.mediaDevices
           .getUserMedia({ video: true, audio: true })
           .then((stream) => {
@@ -86,6 +134,7 @@ return {
             currentCall = call;
             document.querySelector("#menu").style.display = "none";
             document.querySelector("#liveFeed").style.display = "block";
+            document.querySelector("#chat").style.display = "block";
             call.on("stream", (remoteStream) => {
               document.querySelector("#remoteStream").srcObject = remoteStream;
               document.querySelector("#remoteStream").play();
@@ -94,13 +143,10 @@ return {
           .catch((err) => {
             console.log("Failed to get local stream:", err);
           });
-          call.on("close", async() => {
-            console.log('Called Ended')
-            // document.querySelector("#remoteStream").pause();
-            // document.querySelector("#localStream").pause();
-            await call.close();
-          
-      });
+        call.on("close", async () => {
+          console.log("Called Ended");
+          await call.close();
+        });
       } else {
         call.close();
       }
@@ -109,6 +155,7 @@ return {
     async function endCall() {
       document.querySelector("#menu").style.display = "block";
       document.querySelector("#liveFeed").style.display = "none";
+      document.querySelector("#chat").style.display = "none";
       if (!currentCall) return;
       try {
         await currentCall.close();
@@ -122,21 +169,25 @@ return {
         port: port.value,
         path: "/myapp",
       });
-      console.log(state.value);
+      state.value.peer = peer.value;
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       });
-      document.getElementById("menu").style.display = "none";
-      document.getElementById("liveFeed").style.display = "block";
-      document.getElementById("localStream").srcObject = stream;
-      document.getElementById("localStream").play();
+      document.querySelector("#menu").style.display = "none";
+      document.querySelector("#liveFeed").style.display = "block";
+      document.querySelector("#chat").style.display = "block";
+      document.querySelector("#localStream").srcObject = stream;
+      document.querySelector("#localStream").play();
 
-      const call = peer.value.call(peerId.value, stream);
+      const call = peer.value.call(peerId.value, stream, {
+        metadata: { id: yourPeerId.value },
+      });
+
       call.on("stream", (stream) => {
-        document.getElementById("remoteStream").srcObject = stream;
-        document.getElementById("remoteStream").play();
+        document.querySelector("#remoteStream").srcObject = stream;
+        document.querySelector("#remoteStream").play();
       });
       // call.on("data", (stream) => {
       //   document.querySelector("#remoteStream").srcObject = stream;
@@ -145,11 +196,13 @@ return {
         console.log(err);
       });
       call.on("close", () => {
-        console.log('Call ended');
         peer.value.disconnect();
-        console.log(peer.value);
       });
       currentCall = call;
+    }
+    function scrollBottom() {
+      const div = document.querySelector("#msgList");
+      div.scrollTo(0, div.scrollHeight);
     }
 
     return {
@@ -162,10 +215,13 @@ return {
       port,
       endCall,
       callUser,
+      sendMsg,
+      state,
       myIp,
       createUrlLink,
       signalServerPort,
       signalServerUrl,
+      scrollBottom,
     };
   },
 });
@@ -177,8 +233,7 @@ return {
       <v-col cols="4">
         <v-card>
           <v-card-title> Configuration </v-card-title>
-              <v-text-field v-model="myIp" label="Your Public Ip">
-              </v-text-field>
+          <v-text-field v-model="myIp" label="Your Public Ip"> </v-text-field>
 
           <v-text-field
             v-model="yourPeerId"
@@ -190,47 +245,77 @@ return {
           <v-card-actions>
             <v-row>
               <v-col>
-            <v-btn @click="createUrlLink()">Share Link </v-btn>
-          </v-col>
-          <v-col>
-            <v-btn :href="signalServerUrl" target="_blank"
-                >Turn Server
-              </v-btn>
-            </v-col>
+                <v-btn @click="createUrlLink()">Share Link </v-btn>
+              </v-col>
+              <v-col>
+                <v-btn :href="signalServerUrl" target="_blank"
+                  >Turn Server
+                </v-btn>
+              </v-col>
             </v-row>
             <v-row>
               <v-col>
-            <div id="menu">
-              <v-text-field
-                v-model="peerId"
-                label="Peer's ID"
-                :rules="rules"
-                hide-details="auto"
-              ></v-text-field>
-              <v-text-field
-                v-model="userName"
-                label="Your Name"
-                :rules="rules"
-                hide-details="auto"
-              ></v-text-field>
-              <v-text-field
-                v-model="host"
-                label="Host"
-                :rules="rules"
-                hide-details="auto"
-              ></v-text-field>
-              <v-text-field
-                v-model="port"
-                label="Port"
-                :rules="rules"
-                hide-details="auto"
-              ></v-text-field>
-              <v-btn id="startCall" @click="callUser()">Connect</v-btn>
-            </div>
-          </v-col>
-          </v-row>
+                <div id="menu">
+                  <v-text-field
+                    v-model="peerId"
+                    label="Peer's ID"
+                    :rules="rules"
+                    hide-details="auto"
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="userName"
+                    label="Your Name"
+                    :rules="rules"
+                    hide-details="auto"
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="host"
+                    label="Host"
+                    :rules="rules"
+                    hide-details="auto"
+                  ></v-text-field>
+                  <v-text-field
+                    v-model="port"
+                    label="Port"
+                    :rules="rules"
+                    hide-details="auto"
+                  ></v-text-field>
+                  <v-btn id="startCall" @click="callUser()">Connect</v-btn>
+                </div>
+              </v-col>
+            </v-row>
           </v-card-actions>
         </v-card>
+        <div class="pt-3" id="chat">
+          <v-card class="elevation-10">
+            <v-toolbar dark color="darken-1">
+              <v-toolbar-title>Chat</v-toolbar-title>
+            </v-toolbar>
+            <v-text-field v-model="userName" />
+            <v-card-text>
+              <div id="msgList">
+                <v-list dense>
+                  <v-list-item v-for="(msg, i) in state.messages" :key="i">
+                    <v-list-item-content>
+                      {{ msg.sender }} : {{ msg.message }} ({{ msg.time }})
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-text-field
+                v-model="state.message"
+                label="Message"
+                single-line
+                solo-inverted
+              ></v-text-field>
+              <div class="pb-8">
+                <v-btn dark @click="sendMsg()"> send </v-btn>
+              </div>
+            </v-card-actions>
+          </v-card>
+        </div>
       </v-col>
       <v-col cols="8">
         <v-card :height="windowHeight">
@@ -259,6 +344,13 @@ return {
   height: 100%;
   background-color: #000;
   display: none;
+}
+#chat {
+  display: none;
+}
+#msgList {
+  height: 200px;
+  overflow-y: scroll;
 }
 #localStream {
   position: absolute;
