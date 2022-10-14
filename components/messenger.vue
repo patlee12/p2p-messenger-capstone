@@ -11,11 +11,6 @@ export default defineComponent({
   name: "Messenger",
 
   setup() {
-    onMounted(() => {
-      setInterval(function () {
-        scrollBottom();
-      }, 200);
-    });
     const route = useRoute();
     const yourPeerId = ref();
     const peerId = ref(
@@ -101,6 +96,7 @@ export default defineComponent({
       connection.on("data", (data) => {
         state.value.messages.push(data);
       });
+      scrollBottom();
     });
 
     async function sendMsg() {
@@ -116,6 +112,7 @@ export default defineComponent({
         state.value.messages.push(msg);
         state.value.message = "";
       });
+      scrollBottom();
     }
 
     let currentCall = undefined;
@@ -201,8 +198,10 @@ export default defineComponent({
       currentCall = call;
     }
     function scrollBottom() {
-      const div = document.querySelector("#msgList");
-      div.scrollTo(0, div.scrollHeight);
+      setTimeout(function () {
+        const div = document.querySelector("#msgList");
+        div.scrollTo(0, div.scrollHeight);
+      }, 200);
     }
 
     return {
@@ -291,13 +290,18 @@ export default defineComponent({
             <v-toolbar dark color="darken-1">
               <v-toolbar-title>Chat</v-toolbar-title>
             </v-toolbar>
-            <v-text-field v-model="userName" />
+            <v-text-field
+              label="Name"
+              placeholder="Enter your name"
+              v-model="userName"
+            />
             <v-card-text>
               <div id="msgList">
-                <v-list dense>
+                <v-list shaped>
                   <v-list-item v-for="(msg, i) in state.messages" :key="i">
                     <v-list-item-content>
-                      {{ msg.sender }} : {{ msg.message }} ({{ msg.time }})
+                      <b>{{ msg.sender }} :</b> {{ msg.message }}
+                      <i>({{ msg.time }})</i>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
