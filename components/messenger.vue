@@ -299,7 +299,7 @@ export default defineComponent({
               <div id="msgList">
                 <v-list shaped>
                   <v-list-item v-for="(msg, i) in state.messages" :key="i">
-                    <v-list-item-content>
+                    <v-list-item-content id="msg">
                       <b>{{ msg.sender }} :</b> {{ msg.message }}
                       <i>({{ msg.time }})</i>
                     </v-list-item-content>
@@ -355,6 +355,9 @@ export default defineComponent({
 #msgList {
   height: 200px;
   overflow-y: scroll;
+}
+#msg {
+  padding-bottom: 5px;
 }
 #localStream {
   position: absolute;
