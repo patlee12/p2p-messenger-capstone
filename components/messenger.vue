@@ -1,7 +1,7 @@
 <script>
 import {
   defineComponent,
-  onMounted,
+  computed,
   ref,
   useRoute,
 } from "@nuxtjs/composition-api";
@@ -29,6 +29,13 @@ export default defineComponent({
     );
     const host = ref(signalServerHost.value);
     const port = ref(signalServerPort.value);
+    const showLocalLink = computed(() => {
+      if (splitUrl[1].slice(2).includes("192.168")) {
+        return true;
+      } else {
+        return false;
+      }
+    });
     const state = ref({
       myid: yourPeerId.value,
       peerId: peerId.value,
@@ -65,13 +72,28 @@ export default defineComponent({
       myIp.value = ip;
     }
     getIp();
-    async function createUrlLink() {
+    async function createUrlLocalLink() {
       try {
         await navigator.clipboard.writeText(callUrl.value);
-        alert("Copied");
+        alert("Local area network link copied to clipboard.");
       } catch ($err) {
         alert("Cannot copy");
       }
+    }
+
+    async function createUrlPublicLink() {
+      callUrl.value = `https://${myIp.value}:${websiteServerPort.value}/dashboard?peerId=${yourPeerId.value}`;
+      try {
+        await navigator.clipboard.writeText(callUrl.value);
+        alert("Public Link copied to clipboard.");
+      } catch ($err) {
+        alert("Cannot copy");
+      }
+    }
+    function reloadPage() {
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
     }
 
     const windowHeight = window.innerHeight * 0.7;
@@ -205,6 +227,7 @@ export default defineComponent({
     }
 
     return {
+      showLocalLink,
       windowHeight,
       rules,
       yourPeerId,
@@ -217,7 +240,9 @@ export default defineComponent({
       sendMsg,
       state,
       myIp,
-      createUrlLink,
+      createUrlLocalLink,
+      createUrlPublicLink,
+      reloadPage,
       signalServerPort,
       signalServerUrl,
       scrollBottom,
@@ -243,46 +268,63 @@ export default defineComponent({
           ></v-text-field>
           <v-card-actions>
             <v-row>
-              <v-col>
-                <v-btn @click="createUrlLink()">Share Link </v-btn>
+              <v-col v-if="showLocalLink">
+                <v-btn
+                  color="primary"
+                  title="Use this link if your trying to connect to somone on your local area network."
+                  @click="createUrlLocalLink()"
+                  >Local Link
+                </v-btn>
               </v-col>
               <v-col>
-                <v-btn :href="signalServerUrl" target="_blank"
-                  >Turn Server
+                <v-btn
+                  color="primary"
+                  title="Use this link if your trying to connect to somone over the internet."
+                  @click="createUrlPublicLink()"
+                  >Public Link
+                </v-btn>
+              </v-col>
+              <v-col>
+                <v-btn
+                  v-if="yourPeerId == ''"
+                  id="turnServer"
+                  :href="signalServerUrl"
+                  target="_blank"
+                  @click="reloadPage()"
+                  >Connect Turn Server
                 </v-btn>
               </v-col>
             </v-row>
-            <v-row>
-              <v-col>
-                <div id="menu">
-                  <v-text-field
-                    v-model="peerId"
-                    label="Peer's ID"
-                    :rules="rules"
-                    hide-details="auto"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="userName"
-                    label="Your Name"
-                    :rules="rules"
-                    hide-details="auto"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="host"
-                    label="Host"
-                    :rules="rules"
-                    hide-details="auto"
-                  ></v-text-field>
-                  <v-text-field
-                    v-model="port"
-                    label="Port"
-                    :rules="rules"
-                    hide-details="auto"
-                  ></v-text-field>
-                  <v-btn id="startCall" @click="callUser()">Connect</v-btn>
-                </div>
-              </v-col>
-            </v-row>
+            <v-container fluid ma-0 pa-0 fill-height>
+              <div v-if="yourPeerId !== ''" id="menu">
+                <v-text-field
+                  v-model="peerId"
+                  label="Peer's ID"
+                  :rules="rules"
+                  hide-details="auto"
+                ></v-text-field>
+                <v-text-field
+                  v-model="userName"
+                  label="Your Name"
+                  :rules="rules"
+                  hide-details="auto"
+                ></v-text-field>
+                <v-text-field
+                  v-model="host"
+                  label="Host"
+                  :rules="rules"
+                  hide-details="auto"
+                ></v-text-field>
+                <v-text-field
+                  v-model="port"
+                  label="Port"
+                  :rules="rules"
+                  hide-details="auto"
+                ></v-text-field>
+                <v-btn id="startCall" @click="callUser()">Call</v-btn>
+              </div>
+              <div v-else>Please connect to the Turn Server.</div>
+            </v-container>
           </v-card-actions>
         </v-card>
         <div class="pt-3" id="chat">
@@ -379,6 +421,12 @@ export default defineComponent({
   transform: translate(-50%, -50%);
 }
 #startCall {
+  padding: 5px;
+  background-color: green;
+  color: white;
+  border: none;
+}
+#turnServer {
   padding: 5px;
   background-color: green;
   color: white;
