@@ -225,7 +225,6 @@ export default defineComponent({
         div.scrollTo(0, div.scrollHeight);
       }, 200);
     }
-    console.log(yourPeerId.value);
     return {
       showLocalLink,
       windowHeight,
