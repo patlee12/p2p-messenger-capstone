@@ -225,7 +225,7 @@ export default defineComponent({
         div.scrollTo(0, div.scrollHeight);
       }, 200);
     }
-
+    console.log(yourPeerId.value);
     return {
       showLocalLink,
       windowHeight,
@@ -286,7 +286,7 @@ export default defineComponent({
               </v-col>
               <v-col>
                 <v-btn
-                  v-if="yourPeerId == ''"
+                  v-if="yourPeerId == undefined"
                   id="turnServer"
                   :href="signalServerUrl"
                   target="_blank"
@@ -296,7 +296,7 @@ export default defineComponent({
               </v-col>
             </v-row>
             <v-container fluid ma-0 pa-0 fill-height>
-              <div v-if="yourPeerId !== ''" id="menu">
+              <div v-if="yourPeerId !== undefined" id="menu">
                 <v-text-field
                   v-model="peerId"
                   label="Peer's ID"
