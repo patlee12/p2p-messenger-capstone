@@ -82,7 +82,9 @@ export default defineComponent({
     }
 
     async function createUrlPublicLink() {
-      callUrl.value = `https://${myIp.value}:${websiteServerPort.value}/dashboard?peerId=${yourPeerId.value}`;
+      if (splitUrl[1].slice(2).includes("192.168")) {
+        callUrl.value = `https://${myIp.value}:${websiteServerPort.value}/dashboard?peerId=${yourPeerId.value}`;
+      }
       try {
         await navigator.clipboard.writeText(callUrl.value);
         alert("Public Link copied to clipboard.");
@@ -92,6 +94,9 @@ export default defineComponent({
     }
     function reloadPage() {
       setTimeout(() => {
+        alert(
+          "Press 'Ok' to reload the page after loading turn server page successfully."
+        );
         location.reload();
       }, 1000);
     }
@@ -256,8 +261,6 @@ export default defineComponent({
       <v-col cols="4">
         <v-card>
           <v-card-title> Configuration </v-card-title>
-          <v-text-field v-model="myIp" label="Your Public Ip"> </v-text-field>
-
           <v-text-field
             v-model="yourPeerId"
             @focus="$event.target.select()"
