@@ -95,7 +95,7 @@ export default defineComponent({
     function reloadPage() {
       setTimeout(() => {
         alert(
-          "Press 'Ok' to reload the page after loading turn server page successfully."
+          "Press 'Ok' to reload the page after loading turn server page successfully loads."
         );
         location.reload();
       }, 1000);
