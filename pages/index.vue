@@ -171,5 +171,8 @@ mwAAABl0RVh0U29mdHdhcmUAZ25vbWUtc2NyZWVuc2hvdO8Dvz4AAAAASUVORK5CYII="
       An application focused on delivering private communication between peers
       without a centralized server in the middle.
     </h4>
+    <div class="pt-2">
+      <v-btn to="/dashboard" color="primary">Get Started</v-btn>
+    </div>
   </div>
 </template>
